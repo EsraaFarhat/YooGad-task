@@ -20,8 +20,19 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+// List all products
+router.get("/", async (req, res, next) => {
+  try {
+    const products = await pool.query("SELECT * FROM product");
+
+    res.json(products.rows);
+  } catch (err) {
+    console.log(err.message);
+  }
+});
+
 // List products related to specific seller
-router.get("/:sellerId", async (req, res, next) => {
+router.get("/seller/:sellerId", async (req, res, next) => {
   const { sellerId } = req.params;
   const categoryId = req.query.category;
   const minPrice = req.query.minPrice || 0;
@@ -47,15 +58,56 @@ router.get("/:sellerId", async (req, res, next) => {
   }
 });
 
+// get product by id
+router.get("/:productId", async (req, res, next) => {
+  const { productId } = req.params;
+
+  try {
+    const products = await pool.query(
+      "SELECT * FROM product WHERE product_id = $1",
+      [productId]
+    );
+
+    res.json(products.rows[0]);
+  } catch (err) {
+    console.log(err.message);
+  }
+});
+
+//   Update product by id
+router.put("/:productId", async (req, res, next) => {
+  const { productId } = req.params;
+  const { product_name, price } = req.body;
+
+  let query = "";
+  let values;
+
+  if (product_name !== undefined && price !== undefined) {
+    query = `UPDATE product SET product_name = $1 AND price = $2 WHERE product_id = $3 RETURNING *`;
+    values = [product_name, price, productId];
+  } else if (product_name) {
+    query = `UPDATE product SET product_name = $1 WHERE product_id = $2 RETURNING *`;
+    values = [product_name, productId];
+  } else if (price) {
+    query = `UPDATE product SET price = $1 WHERE product_id = $2 RETURNING *`;
+    values = [price, productId];
+  }
+  try {
+    const product = await pool.query(query, values);
+
+    res.json(product.rows);
+  } catch (err) {
+    console.log(err.message);
+  }
+});
 
 // Delete all products which its creation dates are more than a month ago
 router.delete("/", async (req, res, next) => {
-    
-    const deletedProducts = await pool.query(
-        "DELETE FROM product WHERE ts < NOW() - interval '1 month' RETURNING *"
-      );
-  
-    res.json(deletedProducts.rows);
-  });
+  const deletedProducts = await pool.query(
+    "DELETE FROM product WHERE ts < NOW() - interval '1 month' RETURNING *"
+  );
+
+  res.json(deletedProducts.rows);
+});
 
 module.exports = router;
