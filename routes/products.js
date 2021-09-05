@@ -46,4 +46,16 @@ router.get("/:sellerId", async (req, res, next) => {
     console.log(err.message);
   }
 });
+
+
+// Delete all products which its creation dates are more than a month ago
+router.delete("/", async (req, res, next) => {
+    
+    const deletedProducts = await pool.query(
+        "DELETE FROM product WHERE ts < NOW() - interval '1 month' RETURNING *"
+      );
+  
+    res.json(deletedProducts.rows);
+  });
+
 module.exports = router;
