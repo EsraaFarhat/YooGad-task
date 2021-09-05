@@ -40,3 +40,10 @@ INSERT INTO category (category_name, parentId) VALUES
         ('monitors', 5), 
         ('vegetables', 1),
         ('cars', 3);
+
+INSERT INTO seller (seller_name) VALUES 
+        ('ahmed'),
+        ('mohamed'),
+        ('ali'), 
+        ('esraa'), 
+        ('asmaa');
