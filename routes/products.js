@@ -82,7 +82,10 @@ router.put("/:productId", async (req, res, next) => {
   let query = "";
   let values;
 
-  if (product_name) {
+  if (product_name !== undefined && price !== undefined) {
+    query = `UPDATE product SET product_name = $1, price = $2 WHERE product_id = $3 RETURNING *`;
+    values = [product_name, price, productId];
+  } else if (product_name) {
     query = `UPDATE product SET product_name = $1 WHERE product_id = $2 RETURNING *`;
     values = [product_name, productId];
   } else if (price) {
